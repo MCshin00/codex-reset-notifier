@@ -1,0 +1,28 @@
+services:
+  notifier:
+    build: .
+    # Docker/서버 재부팅 시 자동 시작. 사용자가 수동으로 중지한 경우에는 중지 상태 유지.
+    restart: unless-stopped
+    init: true
+    environment:
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:?Set DISCORD_WEBHOOK_URL in .env}
+      CONFIG_FILE: /app/config/application.properties
+      STATE_FILE: /data/state.json
+    volumes:
+      - ./config:/app/config:ro
+      - notifier-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '3'
+
+volumes:
+  notifier-data:
